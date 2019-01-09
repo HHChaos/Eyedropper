@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <!--*-->
+    <id>Eyedropper.UWP</id>
+    <!--*-->
+    <version>0.0.1</version>
+    <title>Eyedropper.UWP</title>
+    <!--*-->
+    <authors>HHChaos</authors>
+    <owners>HHChaos</owners>
+    <!--
+    <licenseUrl></licenseUrl>
+    <projectUrl></projectUrl>
+    <iconUrl></iconUrl>
+-->
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <!--*-->
+    <description>Eyedropper can pick up a color from anywhere in your application. Zoom in to see every pixel of color to choose from</description>
+    <!--*-->
+    <releaseNotes>First version.</releaseNotes>
+    <copyright>Copyright ©  2019</copyright>
+    <tags>
+    </tags>
+    <dependencies>
+      <!--
+      <dependency id="SampleDependency" version="1.0" />
+-->
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="bin\Release\Themes\*.xbf" target="lib\uap10.0\Eyedropper.UWP\Themes" />
+    <file src="bin\Release\Eyedropper.UWP.dll" target="lib\uap10.0" />
+    <file src="bin\Release\Eyedropper.UWP.pdb" target="lib\uap10.0" />
+    <file src="bin\Release\Eyedropper.UWP.pri" target="lib\uap10.0" />
+    <file src="bin\Release\Eyedropper.UWP.xr.xml" target="lib\uap10.0\Eyedropper.UWP" />
+  </files>
+</package>
