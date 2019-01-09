@@ -34,7 +34,7 @@ namespace Eyedropper.UWP
         private readonly CanvasDevice _device = CanvasDevice.GetSharedDevice();
         private const int PreviewPixelWidth = 100;
         private readonly CanvasImageSource _previewImageSource;
-        
+
 
 
         public Color Color
@@ -52,13 +52,14 @@ namespace Eyedropper.UWP
 
         public ImageSource Preview
         {
-            get { return (ImageSource)GetValue(PreviewProperty); }
+            get { return (ImageSource) GetValue(PreviewProperty); }
             set { SetValue(PreviewProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for Preview.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty PreviewProperty =
-            DependencyProperty.Register("Preview", typeof(ImageSource), typeof(Eyedropper), new PropertyMetadata(default(ImageSource)));
+            DependencyProperty.Register("Preview", typeof(ImageSource), typeof(Eyedropper),
+                new PropertyMetadata(default(ImageSource)));
 
 
 
@@ -98,8 +99,9 @@ namespace Eyedropper.UWP
             }
             else
             {
-                this.Visibility = Visibility.Collapsed;
+                this.Opacity = 0.01;
             }
+
             _rootGrid.Children.Add(this);
             _popup.IsOpen = true;
             var result = await _taskSource.Task;
@@ -220,9 +222,9 @@ namespace Eyedropper.UWP
             var point = e.GetCurrentPoint(_rootGrid);
             UpdateEyedropper(point.Position);
 
-            if(this.Visibility == Visibility.Collapsed)
+            if (this.Opacity < 1)
             {
-                this.Visibility = Visibility.Visible;
+                this.Opacity = 1;
             }
         }
 

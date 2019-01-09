@@ -4,28 +4,25 @@
     <!--*-->
     <id>Eyedropper.UWP</id>
     <!--*-->
-    <version>0.0.1</version>
+    <version>1.0.0.1</version>
     <title>Eyedropper.UWP</title>
     <!--*-->
     <authors>HHChaos</authors>
     <owners>HHChaos</owners>
+    <licenseUrl>https://github.com/HHChaos/Eyedropper/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/HHChaos/Eyedropper</projectUrl>
     <!--
-    <licenseUrl></licenseUrl>
-    <projectUrl></projectUrl>
     <iconUrl></iconUrl>
 -->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <!--*-->
-    <description>Eyedropper can pick up a color from anywhere in your application. Zoom in to see every pixel of color to choose from</description>
+    <description>Eyedropper can pick up a color from anywhere in your application. Zoom in to see every pixel of color to choose from.</description>
     <!--*-->
     <releaseNotes>First version.</releaseNotes>
     <copyright>Copyright ©  2019</copyright>
-    <tags>
-    </tags>
+    <tags>C# UWP Eyedropper ColorPicker </tags>
     <dependencies>
-      <!--
-      <dependency id="SampleDependency" version="1.0" />
--->
+      <dependency id="Win2D.uwp" version="1.21.0" />
     </dependencies>
   </metadata>
   <files>
