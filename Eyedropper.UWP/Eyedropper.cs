@@ -32,7 +32,8 @@ namespace Eyedropper.UWP
         private readonly TranslateTransform _layoutTransform = new TranslateTransform();
         private CanvasBitmap _appScreenshot;
         private readonly CanvasDevice _device = CanvasDevice.GetSharedDevice();
-        private const int PreviewPixelWidth = 100;
+        private const int PreviewPixelWidth = 110;
+        private const int PixelCountPerRow = 11;
         private readonly CanvasImageSource _previewImageSource;
 
 
@@ -128,8 +129,7 @@ namespace Eyedropper.UWP
 
         private void UpdatePreview(int centerX, int centerY)
         {
-            var pixelCountPerRow = 11;
-            var halfPixelCountPerRow = (pixelCountPerRow - 1) / 2;
+            var halfPixelCountPerRow = (PixelCountPerRow - 1) / 2;
             var left = (int) Math.Min(_appScreenshot.SizeInPixels.Width - 1,
                 Math.Max(centerX - halfPixelCountPerRow, 0));
             var top = (int) Math.Min(_appScreenshot.SizeInPixels.Height - 1,
@@ -146,7 +146,7 @@ namespace Eyedropper.UWP
             var colorEndX = colorStartX + width;
             var colorEndY = colorStartY + height;
 
-            var step = PreviewPixelWidth / pixelCountPerRow;
+            var step = PreviewPixelWidth / PixelCountPerRow;
             var size = new Size(step, step);
             var startPoint = new Point(0, step * colorStartY);
 
