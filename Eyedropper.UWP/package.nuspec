@@ -4,7 +4,7 @@
     <!--*-->
     <id>Eyedropper.UWP</id>
     <!--*-->
-    <version>1.0.0.2</version>
+    <version>1.0.1</version>
     <title>Eyedropper.UWP</title>
     <!--*-->
     <authors>HHChaos</authors>
@@ -18,7 +18,7 @@
     <!--*-->
     <description>Eyedropper can pick up a color from anywhere in your application. Zoom in to see every pixel of color to choose from.</description>
     <!--*-->
-    <releaseNotes>First version.</releaseNotes>
+    <releaseNotes>Fix a bug when dpi changed.</releaseNotes>
     <copyright>Copyright ©  2019</copyright>
     <tags>C# UWP Eyedropper ColorPicker </tags>
     <dependencies>
