@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Graphics.DirectX;
+using Windows.Graphics.Display;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
@@ -35,6 +36,7 @@ namespace Eyedropper.UWP
         private const int PreviewPixelWidth = 110;
         private const int PixelCountPerRow = 11;
         private readonly CanvasImageSource _previewImageSource;
+        private Action _lazyTask = null;
 
 
 
@@ -73,7 +75,9 @@ namespace Eyedropper.UWP
             IsHitTestVisible = false;
             _previewImageSource = new CanvasImageSource(_device, PreviewPixelWidth, PreviewPixelWidth, 96f);
             Preview = _previewImageSource;
+            this.Loaded += Eyedropper_Loaded;
         }
+
 
         public async Task<Color> OpenEyedropper(Point? startPoint = null)
         {
@@ -93,14 +97,15 @@ namespace Eyedropper.UWP
             }
 
             HookUpEvents();
+            this.Opacity = 0.01;
             if (startPoint.HasValue)
             {
-                _layoutTransform.X = startPoint.Value.X;
-                _layoutTransform.Y = startPoint.Value.Y;
-            }
-            else
-            {
-                this.Opacity = 0.01;
+                _lazyTask = async () =>
+                {
+                    await UpdateAppScreenshotAsync();
+                    UpdateEyedropper(startPoint.Value);
+                    this.Opacity = 1;
+                };
             }
 
             _rootGrid.Children.Add(this);
@@ -167,10 +172,14 @@ namespace Eyedropper.UWP
             }
         }
 
-        private async Task UpdateAppScreenshot()
+        private async Task UpdateAppScreenshotAsync()
         {
             var renderTarget = new RenderTargetBitmap();
-            await renderTarget.RenderAsync(Window.Current.Content);
+            var diaplayInfo = DisplayInformation.GetForCurrentView();
+            var scale = diaplayInfo.RawPixelsPerViewPixel;
+            var scaleWidth = (int)Math.Ceiling(Window.Current.Bounds.Width / scale);
+            var scaleHeight = (int)Math.Ceiling(Window.Current.Bounds.Height / scale);
+            await renderTarget.RenderAsync(Window.Current.Content, scaleWidth, scaleHeight);
             var pixels = await renderTarget.GetPixelsAsync();
             _appScreenshot = CanvasBitmap.CreateFromBytes(_device, pixels, renderTarget.PixelWidth,
                 renderTarget.PixelHeight, DirectXPixelFormat.B8G8R8A8UIntNormalized);
@@ -180,10 +189,21 @@ namespace Eyedropper.UWP
         {
             Unloaded += Eyedropper_Unloaded;
             Window.Current.SizeChanged += Window_SizeChanged;
-
+            DisplayInformation.GetForCurrentView().DpiChanged += Eyedropper_DpiChanged;
             _rootGrid.PointerPressed += _rootGrid_PointerPressed;
             _rootGrid.PointerMoved += _rootGrid_PointerMoved;
             _rootGrid.PointerReleased += _rootGrid_PointerReleased;
+        }
+
+        private void Eyedropper_Loaded(object sender, RoutedEventArgs e)
+        {
+            _lazyTask?.Invoke();
+            _lazyTask = null;
+        }
+
+        private async void Eyedropper_DpiChanged(DisplayInformation sender, object args)
+        {
+            await UpdateAppScreenshotAsync();
         }
 
         private void _rootGrid_PointerReleased(object sender, PointerRoutedEventArgs e)
@@ -216,7 +236,7 @@ namespace Eyedropper.UWP
             PickStarted?.Invoke(this, EventArgs.Empty);
             if (_appScreenshot == null)
             {
-                await UpdateAppScreenshot();
+                await UpdateAppScreenshotAsync();
             }
 
             var point = e.GetCurrentPoint(_rootGrid);
@@ -232,6 +252,7 @@ namespace Eyedropper.UWP
         {
             Unloaded -= Eyedropper_Unloaded;
             Window.Current.SizeChanged -= Window_SizeChanged;
+            DisplayInformation.GetForCurrentView().DpiChanged -= Eyedropper_DpiChanged;
             if (_rootGrid != null)
             {
                 _rootGrid.PointerPressed -= _rootGrid_PointerPressed;
@@ -260,7 +281,7 @@ namespace Eyedropper.UWP
                 _rootGrid.Height = Window.Current.Bounds.Height;
             }
 
-            await UpdateAppScreenshot();
+            await UpdateAppScreenshotAsync();
         }
 
     }
