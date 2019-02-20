@@ -28,12 +28,14 @@ namespace Eyedropper.UWP
 
         private Popup _popup;
         private Grid _rootGrid;
+        private static readonly CoreCursor _defaultCursor = new CoreCursor(CoreCursorType.Arrow, 1);
+        private static readonly CoreCursor _moveCursor = new CoreCursor(CoreCursorType.Cross, 1);
         private TaskCompletionSource<Color> _taskSource;
         private uint _pointerId;
         private readonly TranslateTransform _layoutTransform = new TranslateTransform();
         private CanvasBitmap _appScreenshot;
         private readonly CanvasDevice _device = CanvasDevice.GetSharedDevice();
-        private const int PreviewPixelWidth = 110;
+        private const int PreviewPixelsPerRawPixel = 10;
         private const int PixelCountPerRow = 11;
         private readonly CanvasImageSource _previewImageSource;
         private Action _lazyTask = null;
@@ -73,7 +75,7 @@ namespace Eyedropper.UWP
             HorizontalAlignment = HorizontalAlignment.Left;
             VerticalAlignment = VerticalAlignment.Top;
             IsHitTestVisible = false;
-            _previewImageSource = new CanvasImageSource(_device, PreviewPixelWidth, PreviewPixelWidth, 96f);
+            _previewImageSource = new CanvasImageSource(_device, PreviewPixelsPerRawPixel* PixelCountPerRow, PreviewPixelsPerRawPixel * PixelCountPerRow, 96f);
             Preview = _previewImageSource;
             this.Loaded += Eyedropper_Loaded;
         }
@@ -150,24 +152,23 @@ namespace Eyedropper.UWP
             var colorStartY = top - (centerY - halfPixelCountPerRow);
             var colorEndX = colorStartX + width;
             var colorEndY = colorStartY + height;
-
-            var step = PreviewPixelWidth / PixelCountPerRow;
-            var size = new Size(step, step);
-            var startPoint = new Point(0, step * colorStartY);
+            
+            var size = new Size(PreviewPixelsPerRawPixel, PreviewPixelsPerRawPixel);
+            var startPoint = new Point(0, PreviewPixelsPerRawPixel * colorStartY);
 
             using (var drawingSession = _previewImageSource.CreateDrawingSession(Colors.White))
             {
                 for (var i = colorStartY; i < colorEndY; i++)
                 {
-                    startPoint.X = colorStartX * step;
+                    startPoint.X = colorStartX * PreviewPixelsPerRawPixel;
                     for (var j = colorStartX; j < colorEndX; j++)
                     {
                         var color = colors[(i - colorStartY) * width + (j - colorStartX)];
                         drawingSession.FillRectangle(new Rect(startPoint, size), color);
-                        startPoint.X += step;
+                        startPoint.X += PreviewPixelsPerRawPixel;
                     }
 
-                    startPoint.Y += step;
+                    startPoint.Y += PreviewPixelsPerRawPixel;
                 }
             }
         }
@@ -190,9 +191,21 @@ namespace Eyedropper.UWP
             Unloaded += Eyedropper_Unloaded;
             Window.Current.SizeChanged += Window_SizeChanged;
             DisplayInformation.GetForCurrentView().DpiChanged += Eyedropper_DpiChanged;
+            _rootGrid.PointerEntered += _rootGrid_PointerEntered;
+            _rootGrid.PointerExited += _rootGrid_PointerExited;
             _rootGrid.PointerPressed += _rootGrid_PointerPressed;
             _rootGrid.PointerMoved += _rootGrid_PointerMoved;
             _rootGrid.PointerReleased += _rootGrid_PointerReleased;
+        }
+
+        private void _rootGrid_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = _defaultCursor;
+        }
+
+        private void _rootGrid_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = _moveCursor;
         }
 
         private void Eyedropper_Loaded(object sender, RoutedEventArgs e)
@@ -255,6 +268,8 @@ namespace Eyedropper.UWP
             DisplayInformation.GetForCurrentView().DpiChanged -= Eyedropper_DpiChanged;
             if (_rootGrid != null)
             {
+                _rootGrid.PointerEntered -= _rootGrid_PointerEntered;
+                _rootGrid.PointerExited -= _rootGrid_PointerExited;
                 _rootGrid.PointerPressed -= _rootGrid_PointerPressed;
                 _rootGrid.PointerMoved -= _rootGrid_PointerMoved;
                 _rootGrid.PointerReleased -= _rootGrid_PointerReleased;
@@ -271,6 +286,8 @@ namespace Eyedropper.UWP
 
             _appScreenshot?.Dispose();
             _appScreenshot = null;
+
+            Window.Current.CoreWindow.PointerCursor = _defaultCursor;
         }
 
         private async void Window_SizeChanged(object sender, WindowSizeChangedEventArgs e)
