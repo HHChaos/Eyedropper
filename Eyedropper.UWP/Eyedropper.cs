@@ -50,7 +50,7 @@ namespace Eyedropper.UWP
 
         // Using a DependencyProperty as the backing store for Color.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ColorProperty =
-            DependencyProperty.Register("Color", typeof(Color), typeof(Eyedropper),
+            DependencyProperty.Register(nameof(Color), typeof(Color), typeof(Eyedropper),
                 new PropertyMetadata(default(Color)));
 
 
@@ -63,7 +63,7 @@ namespace Eyedropper.UWP
 
         // Using a DependencyProperty as the backing store for Preview.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty PreviewProperty =
-            DependencyProperty.Register("Preview", typeof(ImageSource), typeof(Eyedropper),
+            DependencyProperty.Register(nameof(Preview), typeof(ImageSource), typeof(Eyedropper),
                 new PropertyMetadata(default(ImageSource)));
 
 
