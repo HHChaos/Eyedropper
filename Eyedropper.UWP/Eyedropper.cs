@@ -28,6 +28,7 @@ namespace Eyedropper.UWP
 
         private Popup _popup;
         private Grid _rootGrid;
+        private Grid _workGrid;
         private static readonly CoreCursor _defaultCursor = new CoreCursor(CoreCursorType.Arrow, 1);
         private static readonly CoreCursor _moveCursor = new CoreCursor(CoreCursorType.Cross, 1);
         private TaskCompletionSource<Color> _taskSource;
@@ -44,7 +45,7 @@ namespace Eyedropper.UWP
 
         public Color Color
         {
-            get { return (Color) GetValue(ColorProperty); }
+            get { return (Color)GetValue(ColorProperty); }
             set { SetValue(ColorProperty, value); }
         }
 
@@ -57,7 +58,7 @@ namespace Eyedropper.UWP
 
         public ImageSource Preview
         {
-            get { return (ImageSource) GetValue(PreviewProperty); }
+            get { return (ImageSource)GetValue(PreviewProperty); }
             set { SetValue(PreviewProperty, value); }
         }
 
@@ -67,6 +68,23 @@ namespace Eyedropper.UWP
                 new PropertyMetadata(default(ImageSource)));
 
 
+
+        public Rect WorkArea
+        {
+            get { return (Rect)GetValue(WorkAreaProperty); }
+            set { SetValue(WorkAreaProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for WorkArea.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty WorkAreaProperty =
+            DependencyProperty.Register(nameof(WorkArea), typeof(Rect), typeof(Eyedropper), new PropertyMetadata(default(Rect), OnWorkAreaChanged));
+
+        public static void OnWorkAreaChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is Eyedropper eyedropper)
+                eyedropper.UpadateWorkArea();
+        }
+        
 
         public Eyedropper()
         {
@@ -81,16 +99,19 @@ namespace Eyedropper.UWP
         }
 
 
-        public async Task<Color> OpenEyedropper(Point? startPoint = null)
+        public async Task<Color> Open(Point? startPoint = null)
         {
             _taskSource = new TaskCompletionSource<Color>();
-            if (_popup == null || _rootGrid == null)
+            if (_popup == null ||_rootGrid==null|| _workGrid == null)
             {
                 _rootGrid = new Grid
                 {
                     Width = Window.Current.Bounds.Width,
-                    Height = Window.Current.Bounds.Height,
-                    Background = new SolidColorBrush(Color.FromArgb(0x1, 0x00, 0x00, 0x00))
+                    Height = Window.Current.Bounds.Height
+                };
+                _workGrid = new Grid
+                {
+                    Background = new SolidColorBrush(Color.FromArgb(0x7f, 0x7f, 0x00, 0x00))
                 };
                 _popup = new Popup
                 {
@@ -109,12 +130,25 @@ namespace Eyedropper.UWP
                     this.Opacity = 1;
                 };
             }
-
-            _rootGrid.Children.Add(this);
+            _rootGrid.Children.Add(_workGrid);
+            _workGrid.Children.Add(this);
+            this.UpadateWorkArea();
             _popup.IsOpen = true;
             var result = await _taskSource.Task;
-            _rootGrid.Children.Remove(this);
+            _taskSource = null;
+            _workGrid.Children.Clear();
+            _rootGrid.Children.Clear();
             return result;
+        }
+
+        public void Close()
+        {
+            if (_taskSource != null && !_taskSource.Task.IsCanceled)
+            {
+                _taskSource.SetCanceled();
+                _workGrid.Children.Clear();
+                _rootGrid.Children.Clear();
+            }
         }
 
         private void UpdateEyedropper(Point position)
@@ -128,10 +162,29 @@ namespace Eyedropper.UWP
             _layoutTransform.X = position.X - (this.ActualWidth / 2);
             _layoutTransform.Y = position.Y - (this.ActualHeight);
 
-            var x = (int) Math.Ceiling(Math.Min(_appScreenshot.SizeInPixels.Width - 1, Math.Max(position.X, 0)));
-            var y = (int) Math.Ceiling(Math.Min(_appScreenshot.SizeInPixels.Height - 1, Math.Max(position.Y, 0)));
+            var x = (int)Math.Ceiling(Math.Min(_appScreenshot.SizeInPixels.Width - 1, Math.Max(position.X + WorkArea.X, WorkArea.X)));
+            var y = (int)Math.Ceiling(Math.Min(_appScreenshot.SizeInPixels.Height - 1, Math.Max(position.Y + WorkArea.Y, WorkArea.X)));
             Color = _appScreenshot.GetPixelColors(x, y, 1, 1).Single();
             UpdatePreview(x, y);
+        }
+
+        private void UpadateWorkArea()
+        {
+            if (_workGrid == null)
+                return;
+            if (WorkArea == default(Rect))
+            {
+                _workGrid.Margin = new Thickness();
+            }
+            else
+            {
+                var left = WorkArea.Left;
+                var right = Window.Current.Bounds.Width - WorkArea.Right;
+                var top = WorkArea.Top;
+                var bottom = Window.Current.Bounds.Height - WorkArea.Bottom;
+                _workGrid.Margin = new Thickness(left, top, right, bottom);
+            }
+
         }
 
         private void UpdatePreview(int centerX, int centerY)
@@ -191,11 +244,11 @@ namespace Eyedropper.UWP
             Unloaded += Eyedropper_Unloaded;
             Window.Current.SizeChanged += Window_SizeChanged;
             DisplayInformation.GetForCurrentView().DpiChanged += Eyedropper_DpiChanged;
-            _rootGrid.PointerEntered += _rootGrid_PointerEntered;
-            _rootGrid.PointerExited += _rootGrid_PointerExited;
-            _rootGrid.PointerPressed += _rootGrid_PointerPressed;
-            _rootGrid.PointerMoved += _rootGrid_PointerMoved;
-            _rootGrid.PointerReleased += _rootGrid_PointerReleased;
+            _workGrid.PointerEntered += _rootGrid_PointerEntered;
+            _workGrid.PointerExited += _rootGrid_PointerExited;
+            _workGrid.PointerPressed += _rootGrid_PointerPressed;
+            _workGrid.PointerMoved += _rootGrid_PointerMoved;
+            _workGrid.PointerReleased += _rootGrid_PointerReleased;
         }
 
         private void _rootGrid_PointerExited(object sender, PointerRoutedEventArgs e)
@@ -224,11 +277,12 @@ namespace Eyedropper.UWP
             var pointer = e.Pointer;
             if (pointer.PointerId == _pointerId)
             {
-                var point = e.GetCurrentPoint(_rootGrid);
+                var point = e.GetCurrentPoint(_workGrid);
                 UpdateEyedropper(point.Position);
                 PickEnded?.Invoke(this, EventArgs.Empty);
                 _pointerId = 0;
-                _taskSource.SetResult(Color);
+                if (!_taskSource.Task.IsCanceled)
+                    _taskSource.SetResult(Color);
             }
         }
 
@@ -237,7 +291,7 @@ namespace Eyedropper.UWP
             var pointer = e.Pointer;
             if (pointer.PointerId == _pointerId)
             {
-                var point = e.GetCurrentPoint(_rootGrid);
+                var point = e.GetCurrentPoint(_workGrid);
                 UpdateEyedropper(point.Position);
                 ColorChanged?.Invoke(this, Color);
             }
@@ -252,7 +306,7 @@ namespace Eyedropper.UWP
                 await UpdateAppScreenshotAsync();
             }
 
-            var point = e.GetCurrentPoint(_rootGrid);
+            var point = e.GetCurrentPoint(_workGrid);
             UpdateEyedropper(point.Position);
 
             if (this.Opacity < 1)
@@ -266,13 +320,13 @@ namespace Eyedropper.UWP
             Unloaded -= Eyedropper_Unloaded;
             Window.Current.SizeChanged -= Window_SizeChanged;
             DisplayInformation.GetForCurrentView().DpiChanged -= Eyedropper_DpiChanged;
-            if (_rootGrid != null)
+            if (_workGrid != null)
             {
-                _rootGrid.PointerEntered -= _rootGrid_PointerEntered;
-                _rootGrid.PointerExited -= _rootGrid_PointerExited;
-                _rootGrid.PointerPressed -= _rootGrid_PointerPressed;
-                _rootGrid.PointerMoved -= _rootGrid_PointerMoved;
-                _rootGrid.PointerReleased -= _rootGrid_PointerReleased;
+                _workGrid.PointerEntered -= _rootGrid_PointerEntered;
+                _workGrid.PointerExited -= _rootGrid_PointerExited;
+                _workGrid.PointerPressed -= _rootGrid_PointerPressed;
+                _workGrid.PointerMoved -= _rootGrid_PointerMoved;
+                _workGrid.PointerReleased -= _rootGrid_PointerReleased;
             }
         }
 

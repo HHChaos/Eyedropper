@@ -20,20 +20,27 @@
                                 <RowDefinition />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            <Grid Width="100" Height="100" Margin="0,0,0,5">
-                                <Image Source="{TemplateBinding Preview}"/>
+                            <Grid
+                                Width="100"
+                                Height="100"
+                                Margin="0,0,0,5">
+                                <Image Source="{TemplateBinding Preview}" />
                                 <Grid>
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="5*"/>
-                                        <RowDefinition Height="*"/>
-                                        <RowDefinition Height="5*"/>
+                                        <RowDefinition Height="5*" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="5*" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="5*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="5*"/>
+                                        <ColumnDefinition Width="5*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="5*" />
                                     </Grid.ColumnDefinitions>
-                                    <Rectangle Grid.Row="1" Grid.Column="1" Stroke="Red" StrokeThickness="1"/>
+                                    <Rectangle
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Stroke="Red"
+                                        StrokeThickness="1" />
                                 </Grid>
                             </Grid>
                             <Grid Grid.Row="1">
@@ -63,4 +70,5 @@
             </Setter.Value>
         </Setter>
     </Style>
+
 </ResourceDictionary>

@@ -26,11 +26,5 @@ namespace Eyedropper.Sample
         {
             this.InitializeComponent();
         }
-        
-        private async void Button_Click(object sender, RoutedEventArgs e)
-        {
-            var eyedropper = new UWP.Eyedropper();
-            var color = await eyedropper.OpenEyedropper();
-        }
     }
 }
