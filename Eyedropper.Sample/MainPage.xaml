@@ -14,7 +14,7 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <uwp:EyedropperToolButton Content="Open" Target="{x:Bind Image}" />
+        <uwp:EyedropperToolButton Target="{x:Bind Image}" />
         <Image
             x:Name="Image"
             Grid.Column="1"

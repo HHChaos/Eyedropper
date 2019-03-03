@@ -26,9 +26,9 @@ namespace Eyedropper.UWP
         public event TypedEventHandler<Eyedropper, EventArgs> PickEnded;
         public event TypedEventHandler<Eyedropper, EventArgs> PickStarted;
 
-        private Popup _popup;
-        private Grid _rootGrid;
-        private Grid _workGrid;
+        private readonly Popup _popup;
+        private readonly Grid _rootGrid;
+        private readonly Grid _workGrid;
         private static readonly CoreCursor _defaultCursor = new CoreCursor(CoreCursorType.Arrow, 1);
         private static readonly CoreCursor _moveCursor = new CoreCursor(CoreCursorType.Cross, 1);
         private TaskCompletionSource<Color> _taskSource;
@@ -84,16 +84,25 @@ namespace Eyedropper.UWP
             if (d is Eyedropper eyedropper)
                 eyedropper.UpadateWorkArea();
         }
-        
+
 
         public Eyedropper()
         {
             this.DefaultStyleKey = typeof(Eyedropper);
+            _rootGrid = new Grid();
+            _workGrid = new Grid
+            {
+                Background = new SolidColorBrush(Color.FromArgb(0x7f, 0x7f, 0x00, 0x00))
+            };
+            _popup = new Popup
+            {
+                Child = _rootGrid
+            };
             RenderTransform = _layoutTransform;
             HorizontalAlignment = HorizontalAlignment.Left;
             VerticalAlignment = VerticalAlignment.Top;
             IsHitTestVisible = false;
-            _previewImageSource = new CanvasImageSource(_device, PreviewPixelsPerRawPixel* PixelCountPerRow, PreviewPixelsPerRawPixel * PixelCountPerRow, 96f);
+            _previewImageSource = new CanvasImageSource(_device, PreviewPixelsPerRawPixel * PixelCountPerRow, PreviewPixelsPerRawPixel * PixelCountPerRow, 96f);
             Preview = _previewImageSource;
             this.Loaded += Eyedropper_Loaded;
         }
@@ -102,23 +111,6 @@ namespace Eyedropper.UWP
         public async Task<Color> Open(Point? startPoint = null)
         {
             _taskSource = new TaskCompletionSource<Color>();
-            if (_popup == null ||_rootGrid==null|| _workGrid == null)
-            {
-                _rootGrid = new Grid
-                {
-                    Width = Window.Current.Bounds.Width,
-                    Height = Window.Current.Bounds.Height
-                };
-                _workGrid = new Grid
-                {
-                    Background = new SolidColorBrush(Color.FromArgb(0x7f, 0x7f, 0x00, 0x00))
-                };
-                _popup = new Popup
-                {
-                    Child = _rootGrid
-                };
-            }
-
             HookUpEvents();
             this.Opacity = 0.01;
             if (startPoint.HasValue)
@@ -131,7 +123,9 @@ namespace Eyedropper.UWP
                 };
             }
             _rootGrid.Children.Add(_workGrid);
-            _workGrid.Children.Add(this);
+            _rootGrid.Children.Add(this);
+            _rootGrid.Width= Window.Current.Bounds.Width;
+            _rootGrid.Height = Window.Current.Bounds.Height;
             this.UpadateWorkArea();
             _popup.IsOpen = true;
             var result = await _taskSource.Task;
@@ -153,7 +147,6 @@ namespace Eyedropper.UWP
 
         private void UpdateEyedropper(Point position)
         {
-
             if (_appScreenshot == null)
             {
                 return;
@@ -162,8 +155,8 @@ namespace Eyedropper.UWP
             _layoutTransform.X = position.X - (this.ActualWidth / 2);
             _layoutTransform.Y = position.Y - (this.ActualHeight);
 
-            var x = (int)Math.Ceiling(Math.Min(_appScreenshot.SizeInPixels.Width - 1, Math.Max(position.X + WorkArea.X, WorkArea.X)));
-            var y = (int)Math.Ceiling(Math.Min(_appScreenshot.SizeInPixels.Height - 1, Math.Max(position.Y + WorkArea.Y, WorkArea.X)));
+            var x = (int)Math.Ceiling(Math.Min(_appScreenshot.SizeInPixels.Width - 1, Math.Max(position.X,0)));
+            var y = (int)Math.Ceiling(Math.Min(_appScreenshot.SizeInPixels.Height - 1, Math.Max(position.Y, 0)));
             Color = _appScreenshot.GetPixelColors(x, y, 1, 1).Single();
             UpdatePreview(x, y);
         }
@@ -277,7 +270,7 @@ namespace Eyedropper.UWP
             var pointer = e.Pointer;
             if (pointer.PointerId == _pointerId)
             {
-                var point = e.GetCurrentPoint(_workGrid);
+                var point = e.GetCurrentPoint(_rootGrid);
                 UpdateEyedropper(point.Position);
                 PickEnded?.Invoke(this, EventArgs.Empty);
                 _pointerId = 0;
@@ -291,7 +284,7 @@ namespace Eyedropper.UWP
             var pointer = e.Pointer;
             if (pointer.PointerId == _pointerId)
             {
-                var point = e.GetCurrentPoint(_workGrid);
+                var point = e.GetCurrentPoint(_rootGrid);
                 UpdateEyedropper(point.Position);
                 ColorChanged?.Invoke(this, Color);
             }
@@ -306,7 +299,7 @@ namespace Eyedropper.UWP
                 await UpdateAppScreenshotAsync();
             }
 
-            var point = e.GetCurrentPoint(_workGrid);
+            var point = e.GetCurrentPoint(_rootGrid);
             UpdateEyedropper(point.Position);
 
             if (this.Opacity < 1)

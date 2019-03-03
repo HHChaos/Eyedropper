@@ -6,18 +6,114 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Input;
 
 namespace Eyedropper.UWP
 {
-    public class EyedropperToolButton:ToggleButton
+    public class EyedropperToolButton: ButtonBase
     {
+        private const string NormalState = "Normal";
+        private const string PointerOverState = "PointerOver";
+        private const string PressedState = "Pressed";
+        private const string DisabledState = "Disabled";
+        private const string EyedropperEnabledState = "EyedropperEnabled";
+        private const string EyedropperEnabledPointerOverState = "EyedropperEnabledPointerOver";
+        private const string EyedropperEnabledPressedState = "EyedropperEnabledPressed";
+        private const string EyedropperEnabledDisabledState = "EyedropperEnabledDisabled";
+
+        /// <inheritdoc/>
+        protected override void OnPointerEntered(PointerRoutedEventArgs e)
+        {
+            base.OnPointerEntered(e);
+
+            VisualStateManager.GoToState(this, EyedropperEnabled ? EyedropperEnabledPointerOverState : PointerOverState, true);
+        }
+
+        /// <inheritdoc/>
+        protected override void OnPointerExited(PointerRoutedEventArgs e)
+        {
+            base.OnPointerExited(e);
+
+            VisualStateManager.GoToState(this, EyedropperEnabled ? EyedropperEnabledState : NormalState, true);
+        }
+
+        /// <inheritdoc/>
+        protected override void OnPointerPressed(PointerRoutedEventArgs e)
+        {
+            base.OnPointerPressed(e);
+
+            VisualStateManager.GoToState(this, EyedropperEnabled ? EyedropperEnabledState : NormalState, true);
+        }
+
         private readonly Eyedropper eyedropper;
 
         public EyedropperToolButton()
         {
-            this.RegisterPropertyChangedCallback(IsCheckedProperty, OnIsCheckedChanged);
+            this.DefaultStyleKey = typeof(EyedropperToolButton);
+            this.RegisterPropertyChangedCallback(IsEnabledProperty, OnIsEnabledChanged);
             eyedropper = new Eyedropper();
+            this.Click += EyedropperToolButton_Click;
+            Window.Current.SizeChanged += Current_SizeChanged;
             eyedropper.PickEnded += Eyedropper_PickEnded;
+        }
+        private void OnIsEnabledChanged(DependencyObject sender, DependencyProperty dp)
+        {
+            if (IsEnabled)
+            {
+                if (IsPressed)
+                {
+                    VisualStateManager.GoToState(this, EyedropperEnabled ? EyedropperEnabledPressedState : PressedState, true);
+                }
+                else if(IsPointerOver)
+                {
+                    VisualStateManager.GoToState(this, EyedropperEnabled ? EyedropperEnabledPointerOverState : PointerOverState, true);
+                }
+                else
+                {
+                    VisualStateManager.GoToState(this, EyedropperEnabled ? EyedropperEnabledState : NormalState, true);
+                }
+            }
+            else
+            {
+                VisualStateManager.GoToState(this, EyedropperEnabled ? EyedropperEnabledDisabledState : DisabledState, true);
+            }
+        }
+
+        private void EyedropperToolButton_Click(object sender, RoutedEventArgs e)
+        {
+            EyedropperEnabled = !EyedropperEnabled;
+        }
+
+        private void Current_SizeChanged(object sender, Windows.UI.Core.WindowSizeChangedEventArgs e)
+        {
+            UpadateEyedropperWorkArea();
+        }
+        
+        public bool EyedropperEnabled
+        {
+            get { return (bool)GetValue(EyedropperEnabledProperty); }
+            set { SetValue(EyedropperEnabledProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for EyedropperEnabled.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty EyedropperEnabledProperty =
+            DependencyProperty.Register("EyedropperEnabled", typeof(bool), typeof(EyedropperToolButton), new PropertyMetadata(false, OnEyedropperEnabledChanged));
+
+        public static void OnEyedropperEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is EyedropperToolButton eyedropperToolButton)
+            {
+                if (eyedropperToolButton.EyedropperEnabled)
+                {
+                    VisualStateManager.GoToState(eyedropperToolButton, eyedropperToolButton.IsPointerOver ? EyedropperEnabledPointerOverState : EyedropperEnabledState, true);
+                    eyedropperToolButton.eyedropper.Open().ConfigureAwait(false);
+                }
+                else
+                {
+                    VisualStateManager.GoToState(eyedropperToolButton, eyedropperToolButton.IsPointerOver ? PointerOverState : NormalState, true);
+                    eyedropperToolButton.eyedropper.Close();
+                }
+            }
         }
 
         public FrameworkElement Target
@@ -79,21 +175,7 @@ namespace Eyedropper.UWP
 
         private void Eyedropper_PickEnded(Eyedropper sender, EventArgs args)
         {
-            IsChecked = false;
+            EyedropperEnabled = false;
         }
-
-        private void OnIsCheckedChanged(DependencyObject sender, DependencyProperty dp)
-        {
-            if (IsChecked == true)
-            {
-                eyedropper.Open().ConfigureAwait(false);
-            }
-            else
-            {
-                eyedropper.Close();
-            }
-        }
-        
-
     }
 }
