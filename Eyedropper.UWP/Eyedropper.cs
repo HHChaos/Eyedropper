@@ -174,6 +174,14 @@ namespace Eyedropper.UWP
             await UpdateAppScreenshotAsync();
             var point = e.GetCurrentPoint(_rootGrid);
             UpdateEyedropper(point.Position);
+            if (e.Pointer.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Touch)
+            {
+                VisualStateManager.GoToState(this, "TouchState", false);
+            }
+            else
+            {
+                VisualStateManager.GoToState(this, "MousePenState", false);
+            }
 
             if (Opacity < 1) Opacity = 1;
         }
