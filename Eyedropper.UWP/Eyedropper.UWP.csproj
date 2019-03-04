@@ -120,8 +120,12 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ColorChangedEventArgs.cs" />
     <Compile Include="Eyedropper.cs" />
+    <Compile Include="Eyedropper.Logic.cs" />
+    <Compile Include="Eyedropper.Properties.cs" />
     <Compile Include="EyedropperToolButton.cs" />
+    <Compile Include="EyedropperToolButton.Properties.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\Eyedropper.UWP.rd.xml" />
   </ItemGroup>

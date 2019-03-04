@@ -10,7 +10,7 @@ using Windows.UI.Xaml.Input;
 
 namespace Eyedropper.UWP
 {
-    public class EyedropperToolButton: ButtonBase
+    public partial class EyedropperToolButton: ButtonBase
     {
         private const string NormalState = "Normal";
         private const string PointerOverState = "PointerOver";
@@ -20,6 +20,10 @@ namespace Eyedropper.UWP
         private const string EyedropperEnabledPointerOverState = "EyedropperEnabledPointerOver";
         private const string EyedropperEnabledPressedState = "EyedropperEnabledPressed";
         private const string EyedropperEnabledDisabledState = "EyedropperEnabledDisabled";
+
+        public event TypedEventHandler<EyedropperToolButton, ColorChangedEventArgs> ColorChanged;
+        public event TypedEventHandler<EyedropperToolButton, EventArgs> PickEnded;
+        public event TypedEventHandler<EyedropperToolButton, EventArgs> PickStarted;
 
         /// <inheritdoc/>
         protected override void OnPointerEntered(PointerRoutedEventArgs e)
@@ -52,10 +56,24 @@ namespace Eyedropper.UWP
             this.DefaultStyleKey = typeof(EyedropperToolButton);
             this.RegisterPropertyChangedCallback(IsEnabledProperty, OnIsEnabledChanged);
             eyedropper = new Eyedropper();
+            eyedropper.ColorChanged += Eyedropper_ColorChanged;
+            eyedropper.PickStarted += Eyedropper_PickStarted;
+            eyedropper.PickEnded += Eyedropper_PickEnded;
             this.Click += EyedropperToolButton_Click;
             Window.Current.SizeChanged += Current_SizeChanged;
-            eyedropper.PickEnded += Eyedropper_PickEnded;
         }
+
+        private void Eyedropper_PickStarted(Eyedropper sender, EventArgs args)
+        {
+            this.PickStarted?.Invoke(this,args);
+        }
+
+        private void Eyedropper_ColorChanged(Eyedropper sender, ColorChangedEventArgs args)
+        {
+            Color = args.NewColor;
+            this.ColorChanged?.Invoke(this,args);
+        }
+        
         private void OnIsEnabledChanged(DependencyObject sender, DependencyProperty dp)
         {
             if (IsEnabled)
@@ -88,80 +106,6 @@ namespace Eyedropper.UWP
         {
             UpadateEyedropperWorkArea();
         }
-        
-        public bool EyedropperEnabled
-        {
-            get { return (bool)GetValue(EyedropperEnabledProperty); }
-            set { SetValue(EyedropperEnabledProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for EyedropperEnabled.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty EyedropperEnabledProperty =
-            DependencyProperty.Register("EyedropperEnabled", typeof(bool), typeof(EyedropperToolButton), new PropertyMetadata(false, OnEyedropperEnabledChanged));
-
-        public static void OnEyedropperEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is EyedropperToolButton eyedropperToolButton)
-            {
-                if (eyedropperToolButton.EyedropperEnabled)
-                {
-                    VisualStateManager.GoToState(eyedropperToolButton, eyedropperToolButton.IsPointerOver ? EyedropperEnabledPointerOverState : EyedropperEnabledState, true);
-                    eyedropperToolButton.eyedropper.Open().ConfigureAwait(false);
-                }
-                else
-                {
-                    VisualStateManager.GoToState(eyedropperToolButton, eyedropperToolButton.IsPointerOver ? PointerOverState : NormalState, true);
-                    eyedropperToolButton.eyedropper.Close();
-                }
-            }
-        }
-
-        public FrameworkElement Target
-        {
-            get { return (FrameworkElement)GetValue(TargetProperty); }
-            set { SetValue(TargetProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for Target.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty TargetProperty =
-            DependencyProperty.Register(nameof(Target), typeof(FrameworkElement), typeof(EyedropperToolButton), new PropertyMetadata(default(FrameworkElement), OnTargetChanged));
-
-        public static void OnTargetChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is EyedropperToolButton eyedropperToolButton)
-            {
-                eyedropperToolButton.UnhookTargetEvents(e.OldValue as FrameworkElement);
-                eyedropperToolButton.HookUpTargetEvents(e.NewValue as FrameworkElement);
-            }
-        }
-
-        private void HookUpTargetEvents(FrameworkElement target)
-        {
-            if (target != null)
-            {
-                target.SizeChanged += Target_SizeChanged;
-                target.PointerEntered += Target_PointerEntered;
-            }
-        }
-
-        private void Target_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            UpadateEyedropperWorkArea();
-        }
-
-        private void Target_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            UpadateEyedropperWorkArea();
-        }
-
-        private void UnhookTargetEvents(FrameworkElement target)
-        {
-            if (target != null)
-            {
-                target.SizeChanged -= Target_SizeChanged;
-                target.PointerEntered -= Target_PointerEntered;
-            }
-        }
 
         private void UpadateEyedropperWorkArea()
         {
@@ -169,13 +113,14 @@ namespace Eyedropper.UWP
             {
                 var transform = Target.TransformToVisual(Window.Current.Content);
                 var position = transform.TransformPoint(new Point());
-                eyedropper.WorkArea = new Rect(position, new Size(Target.ActualWidth,Target.ActualHeight));
+                eyedropper.WorkArea = new Rect(position, new Size(Target.ActualWidth, Target.ActualHeight));
             }
         }
 
         private void Eyedropper_PickEnded(Eyedropper sender, EventArgs args)
         {
             EyedropperEnabled = false;
+            this.PickEnded?.Invoke(this, args);
         }
     }
 }
