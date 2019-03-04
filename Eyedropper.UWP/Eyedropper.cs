@@ -176,13 +176,11 @@ namespace Eyedropper.UWP
             UpdateEyedropper(point.Position);
             if (e.Pointer.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Touch)
             {
-                ColorGridRow = 0;
-                ImageGridRow = 2;
+                VisualStateManager.GoToState(this, "TouchState", false);
             }
             else
             {
-                ColorGridRow = 2;
-                ImageGridRow = 0;
+                VisualStateManager.GoToState(this, "MousePenState", false);
             }
 
             if (Opacity < 1) Opacity = 1;
