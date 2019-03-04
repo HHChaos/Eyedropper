@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.UI;
+﻿using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
 
@@ -12,26 +6,50 @@ namespace Eyedropper.UWP
 {
     public partial class EyedropperToolButton
     {
-        public Color Color
-        {
-            get { return (Color)GetValue(ColorProperty); }
-            set { SetValue(ColorProperty, value); }
-        }
-
         // Using a DependencyProperty as the backing store for Color.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ColorProperty =
             DependencyProperty.Register(nameof(Color), typeof(Color), typeof(EyedropperToolButton),
                 new PropertyMetadata(default(Color)));
 
-        public bool EyedropperEnabled
-        {
-            get { return (bool)GetValue(EyedropperEnabledProperty); }
-            set { SetValue(EyedropperEnabledProperty, value); }
-        }
-
         // Using a DependencyProperty as the backing store for EyedropperEnabled.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty EyedropperEnabledProperty =
-            DependencyProperty.Register("EyedropperEnabled", typeof(bool), typeof(EyedropperToolButton), new PropertyMetadata(false, OnEyedropperEnabledChanged));
+            DependencyProperty.Register(nameof(EyedropperEnabled), typeof(bool), typeof(EyedropperToolButton),
+                new PropertyMetadata(false, OnEyedropperEnabledChanged));
+
+        // Using a DependencyProperty as the backing store for EyedropperStyle.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty EyedropperStyleProperty =
+            DependencyProperty.Register(nameof(EyedropperStyle), typeof(Style), typeof(EyedropperToolButton),
+                new PropertyMetadata(default(Style), OnEyedropperStyleChanged));
+
+        // Using a DependencyProperty as the backing store for Target.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty TargetProperty =
+            DependencyProperty.Register(nameof(Target), typeof(FrameworkElement), typeof(EyedropperToolButton),
+                new PropertyMetadata(default(FrameworkElement), OnTargetChanged));
+
+        public Color Color
+        {
+            get => (Color) GetValue(ColorProperty);
+            set => SetValue(ColorProperty, value);
+        }
+
+        public bool EyedropperEnabled
+        {
+            get => (bool) GetValue(EyedropperEnabledProperty);
+            set => SetValue(EyedropperEnabledProperty, value);
+        }
+
+
+        public Style EyedropperStyle
+        {
+            get => (Style) GetValue(EyedropperStyleProperty);
+            set => SetValue(EyedropperStyleProperty, value);
+        }
+
+        public FrameworkElement Target
+        {
+            get => (FrameworkElement) GetValue(TargetProperty);
+            set => SetValue(TargetProperty, value);
+        }
 
         public static void OnEyedropperEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -39,26 +57,25 @@ namespace Eyedropper.UWP
             {
                 if (eyedropperToolButton.EyedropperEnabled)
                 {
-                    VisualStateManager.GoToState(eyedropperToolButton, eyedropperToolButton.IsPointerOver ? EyedropperEnabledPointerOverState : EyedropperEnabledState, true);
-                    eyedropperToolButton.eyedropper.Open().ConfigureAwait(false);
+                    VisualStateManager.GoToState(eyedropperToolButton,
+                        eyedropperToolButton.IsPointerOver ? EyedropperEnabledPointerOverState : EyedropperEnabledState,
+                        true);
+                    eyedropperToolButton._eyedropper.Open().ConfigureAwait(false);
                 }
                 else
                 {
-                    VisualStateManager.GoToState(eyedropperToolButton, eyedropperToolButton.IsPointerOver ? PointerOverState : NormalState, true);
-                    eyedropperToolButton.eyedropper.Close();
+                    VisualStateManager.GoToState(eyedropperToolButton,
+                        eyedropperToolButton.IsPointerOver ? PointerOverState : NormalState, true);
+                    eyedropperToolButton._eyedropper.Close();
                 }
             }
         }
 
-        public FrameworkElement Target
+        public static void OnEyedropperStyleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            get { return (FrameworkElement)GetValue(TargetProperty); }
-            set { SetValue(TargetProperty, value); }
+            if (d is EyedropperToolButton eyedropperToolButton)
+                eyedropperToolButton._eyedropper.Style = eyedropperToolButton.EyedropperStyle;
         }
-
-        // Using a DependencyProperty as the backing store for Target.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty TargetProperty =
-            DependencyProperty.Register(nameof(Target), typeof(FrameworkElement), typeof(EyedropperToolButton), new PropertyMetadata(default(FrameworkElement), OnTargetChanged));
 
         public static void OnTargetChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -96,6 +113,5 @@ namespace Eyedropper.UWP
         {
             UpadateEyedropperWorkArea();
         }
-        
     }
 }

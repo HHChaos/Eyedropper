@@ -1,5 +1,4 @@
-﻿using Microsoft.Graphics.Canvas;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Foundation;
@@ -8,6 +7,7 @@ using Windows.Graphics.Display;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media.Imaging;
+using Microsoft.Graphics.Canvas;
 
 namespace Eyedropper.UWP
 {
@@ -15,16 +15,13 @@ namespace Eyedropper.UWP
     {
         private void UpdateEyedropper(Point position)
         {
-            if (_appScreenshot == null)
-            {
-                return;
-            }
+            if (_appScreenshot == null) return;
 
-            _layoutTransform.X = position.X - (this.ActualWidth / 2);
-            _layoutTransform.Y = position.Y - (this.ActualHeight);
+            _layoutTransform.X = position.X - ActualWidth / 2;
+            _layoutTransform.Y = position.Y - ActualHeight;
 
-            var x = (int)Math.Ceiling(Math.Min(_appScreenshot.SizeInPixels.Width - 1, Math.Max(position.X, 0)));
-            var y = (int)Math.Ceiling(Math.Min(_appScreenshot.SizeInPixels.Height - 1, Math.Max(position.Y, 0)));
+            var x = (int) Math.Ceiling(Math.Min(_appScreenshot.SizeInPixels.Width - 1, Math.Max(position.X, 0)));
+            var y = (int) Math.Ceiling(Math.Min(_appScreenshot.SizeInPixels.Height - 1, Math.Max(position.Y, 0)));
             Color = _appScreenshot.GetPixelColors(x, y, 1, 1).Single();
             UpdatePreview(x, y);
         }
@@ -45,18 +42,17 @@ namespace Eyedropper.UWP
                 var bottom = Window.Current.Bounds.Height - WorkArea.Bottom;
                 _targetGrid.Margin = new Thickness(left, top, right, bottom);
             }
-
         }
 
         private void UpdatePreview(int centerX, int centerY)
         {
             var halfPixelCountPerRow = (PixelCountPerRow - 1) / 2;
-            var left = (int)Math.Min(_appScreenshot.SizeInPixels.Width - 1,
+            var left = (int) Math.Min(_appScreenshot.SizeInPixels.Width - 1,
                 Math.Max(centerX - halfPixelCountPerRow, 0));
-            var top = (int)Math.Min(_appScreenshot.SizeInPixels.Height - 1,
+            var top = (int) Math.Min(_appScreenshot.SizeInPixels.Height - 1,
                 Math.Max(centerY - halfPixelCountPerRow, 0));
-            var right = (int)Math.Min(centerX + halfPixelCountPerRow, _appScreenshot.SizeInPixels.Width - 1);
-            var bottom = (int)Math.Min(centerY + halfPixelCountPerRow, _appScreenshot.SizeInPixels.Height - 1);
+            var right = (int) Math.Min(centerX + halfPixelCountPerRow, _appScreenshot.SizeInPixels.Width - 1);
+            var bottom = (int) Math.Min(centerY + halfPixelCountPerRow, _appScreenshot.SizeInPixels.Height - 1);
             var width = right - left + 1;
             var height = bottom - top + 1;
             var colors = _appScreenshot.GetPixelColors(left, top, width, height);
@@ -92,8 +88,8 @@ namespace Eyedropper.UWP
             var renderTarget = new RenderTargetBitmap();
             var diaplayInfo = DisplayInformation.GetForCurrentView();
             var scale = diaplayInfo.RawPixelsPerViewPixel;
-            var scaleWidth = (int)Math.Ceiling(Window.Current.Bounds.Width / scale);
-            var scaleHeight = (int)Math.Ceiling(Window.Current.Bounds.Height / scale);
+            var scaleWidth = (int) Math.Ceiling(Window.Current.Bounds.Width / scale);
+            var scaleHeight = (int) Math.Ceiling(Window.Current.Bounds.Height / scale);
             await renderTarget.RenderAsync(Window.Current.Content, scaleWidth, scaleHeight);
             var pixels = await renderTarget.GetPixelsAsync();
             _appScreenshot = CanvasBitmap.CreateFromBytes(_device, pixels, renderTarget.PixelWidth,

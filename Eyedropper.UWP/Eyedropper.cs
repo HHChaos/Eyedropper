@@ -1,6 +1,4 @@
-﻿using Microsoft.Graphics.Canvas;
-using Microsoft.Graphics.Canvas.UI.Xaml;
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Graphics.Display;
@@ -11,6 +9,8 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas.UI.Xaml;
 
 // The Templated Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234235
 
@@ -18,28 +18,25 @@ namespace Eyedropper.UWP
 {
     public partial class Eyedropper : Control
     {
-        public event TypedEventHandler<Eyedropper, ColorChangedEventArgs> ColorChanged;
-        public event TypedEventHandler<Eyedropper, EventArgs> PickEnded;
-        public event TypedEventHandler<Eyedropper, EventArgs> PickStarted;
-
-        private readonly Popup _popup;
-        private readonly Grid _rootGrid;
-        private readonly Grid _targetGrid;
-        private static readonly CoreCursor _defaultCursor = new CoreCursor(CoreCursorType.Arrow, 1);
-        private static readonly CoreCursor _moveCursor = new CoreCursor(CoreCursorType.Cross, 1);
-        private TaskCompletionSource<Color> _taskSource;
-        private uint _pointerId;
-        private readonly TranslateTransform _layoutTransform = new TranslateTransform();
-        private CanvasBitmap _appScreenshot;
-        private readonly CanvasDevice _device = CanvasDevice.GetSharedDevice();
         private const int PreviewPixelsPerRawPixel = 10;
         private const int PixelCountPerRow = 11;
+        private static readonly CoreCursor DefaultCursor = new CoreCursor(CoreCursorType.Arrow, 1);
+        private static readonly CoreCursor MoveCursor = new CoreCursor(CoreCursorType.Cross, 1);
+        private readonly CanvasDevice _device = CanvasDevice.GetSharedDevice();
+        private readonly TranslateTransform _layoutTransform = new TranslateTransform();
+
+        private readonly Popup _popup;
         private readonly CanvasImageSource _previewImageSource;
-        private Action _lazyTask = null;
+        private readonly Grid _rootGrid;
+        private readonly Grid _targetGrid;
+        private CanvasBitmap _appScreenshot;
+        private Action _lazyTask;
+        private uint _pointerId;
+        private TaskCompletionSource<Color> _taskSource;
 
         public Eyedropper()
         {
-            this.DefaultStyleKey = typeof(Eyedropper);
+            DefaultStyleKey = typeof(Eyedropper);
             _rootGrid = new Grid();
             _targetGrid = new Grid
             {
@@ -53,31 +50,34 @@ namespace Eyedropper.UWP
             HorizontalAlignment = HorizontalAlignment.Left;
             VerticalAlignment = VerticalAlignment.Top;
             IsHitTestVisible = false;
-            _previewImageSource = new CanvasImageSource(_device, PreviewPixelsPerRawPixel * PixelCountPerRow, PreviewPixelsPerRawPixel * PixelCountPerRow, 96f);
+            _previewImageSource = new CanvasImageSource(_device, PreviewPixelsPerRawPixel * PixelCountPerRow,
+                PreviewPixelsPerRawPixel * PixelCountPerRow, 96f);
             Preview = _previewImageSource;
-            this.Loaded += Eyedropper_Loaded;
+            Loaded += Eyedropper_Loaded;
         }
+
+        public event TypedEventHandler<Eyedropper, ColorChangedEventArgs> ColorChanged;
+        public event TypedEventHandler<Eyedropper, EventArgs> PickEnded;
+        public event TypedEventHandler<Eyedropper, EventArgs> PickStarted;
 
 
         public async Task<Color> Open(Point? startPoint = null)
         {
             _taskSource = new TaskCompletionSource<Color>();
             HookUpEvents();
-            this.Opacity = 0;
+            Opacity = 0;
             if (startPoint.HasValue)
-            {
                 _lazyTask = async () =>
                 {
                     await UpdateAppScreenshotAsync();
                     UpdateEyedropper(startPoint.Value);
-                    this.Opacity = 1;
+                    Opacity = 1;
                 };
-            }
             _rootGrid.Children.Add(_targetGrid);
             _rootGrid.Children.Add(this);
-            _rootGrid.Width= Window.Current.Bounds.Width;
+            _rootGrid.Width = Window.Current.Bounds.Width;
             _rootGrid.Height = Window.Current.Bounds.Height;
-            this.UpadateWorkArea();
+            UpadateWorkArea();
             _popup.IsOpen = true;
             var result = await _taskSource.Task;
             _taskSource = null;
@@ -130,12 +130,12 @@ namespace Eyedropper.UWP
 
         private void TargetGrid_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            Window.Current.CoreWindow.PointerCursor = _defaultCursor;
+            Window.Current.CoreWindow.PointerCursor = DefaultCursor;
         }
 
         private void TargetGrid_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            Window.Current.CoreWindow.PointerCursor = _moveCursor;
+            Window.Current.CoreWindow.PointerCursor = MoveCursor;
         }
 
         private async void Eyedropper_DpiChanged(DisplayInformation sender, object args)
@@ -175,24 +175,18 @@ namespace Eyedropper.UWP
             var point = e.GetCurrentPoint(_rootGrid);
             UpdateEyedropper(point.Position);
 
-            if (this.Opacity < 1)
-            {
-                this.Opacity = 1;
-            }
+            if (Opacity < 1) Opacity = 1;
         }
 
         private void Eyedropper_Unloaded(object sender, RoutedEventArgs e)
         {
             UnhookEvents();
-            if (_popup != null)
-            {
-                _popup.IsOpen = false;
-            }
+            if (_popup != null) _popup.IsOpen = false;
 
             _appScreenshot?.Dispose();
             _appScreenshot = null;
 
-            Window.Current.CoreWindow.PointerCursor = _defaultCursor;
+            Window.Current.CoreWindow.PointerCursor = DefaultCursor;
         }
 
         private async void Window_SizeChanged(object sender, WindowSizeChangedEventArgs e)
@@ -205,6 +199,5 @@ namespace Eyedropper.UWP
 
             await UpdateAppScreenshotAsync();
         }
-
     }
 }
