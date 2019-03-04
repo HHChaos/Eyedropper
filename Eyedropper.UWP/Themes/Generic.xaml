@@ -169,12 +169,14 @@
                         <Grid Padding="5">
                             <Grid.RowDefinitions>
                                 <RowDefinition />
+                                <RowDefinition Height="5" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid
+                                Grid.Row="{TemplateBinding ImageGridRow}"
                                 Width="100"
                                 Height="100"
-                                Margin="0,0,0,5">
+                                Margin="0">
                                 <Image Source="{TemplateBinding Preview}" />
                                 <Grid>
                                     <Grid.RowDefinitions>
@@ -194,7 +196,7 @@
                                         StrokeThickness="1" />
                                 </Grid>
                             </Grid>
-                            <Grid Grid.Row="1">
+                            <Grid Grid.Row="{TemplateBinding ColorGridRow}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition />

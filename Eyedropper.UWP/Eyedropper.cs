@@ -174,6 +174,16 @@ namespace Eyedropper.UWP
             await UpdateAppScreenshotAsync();
             var point = e.GetCurrentPoint(_rootGrid);
             UpdateEyedropper(point.Position);
+            if (e.Pointer.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Touch)
+            {
+                ColorGridRow = 0;
+                ImageGridRow = 2;
+            }
+            else
+            {
+                ColorGridRow = 2;
+                ImageGridRow = 0;
+            }
 
             if (Opacity < 1) Opacity = 1;
         }
