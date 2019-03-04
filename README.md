@@ -8,9 +8,8 @@ UWP:download from [Nuget](https://www.nuget.org/packages/Eyedropper.UWP/)
 
 ## Using Eyedropper
 
-```c#
-var eyedropper = new Eyedropper();
-var color = await eyedropper.OpenEyedropper();
+```xaml
+<uwp:EyedropperToolButton Target="{x:Bind Image}" />
 ```
 ## Sample App
 
