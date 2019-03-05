@@ -80,6 +80,11 @@ namespace Eyedropper.UWP
             _eyedropper.ColorChanged -= Eyedropper_ColorChanged;
             _eyedropper.PickStarted -= Eyedropper_PickStarted;
             _eyedropper.PickEnded -= Eyedropper_PickEnded;
+            if (Target != null)
+            {
+                Target = null;
+            }
+
             if (EyedropperEnabled)
             {
                 EyedropperEnabled = false;
