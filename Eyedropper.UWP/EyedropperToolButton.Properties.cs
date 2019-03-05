@@ -29,7 +29,7 @@ namespace Eyedropper.UWP
         public Color Color
         {
             get => (Color) GetValue(ColorProperty);
-            set => SetValue(ColorProperty, value);
+            private set => SetValue(ColorProperty, value);
         }
 
         public bool EyedropperEnabled
@@ -51,7 +51,7 @@ namespace Eyedropper.UWP
             set => SetValue(TargetProperty, value);
         }
 
-        public static void OnEyedropperEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnEyedropperEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is EyedropperToolButton eyedropperToolButton)
             {
@@ -71,13 +71,13 @@ namespace Eyedropper.UWP
             }
         }
 
-        public static void OnEyedropperStyleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnEyedropperStyleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is EyedropperToolButton eyedropperToolButton)
                 eyedropperToolButton._eyedropper.Style = eyedropperToolButton.EyedropperStyle;
         }
 
-        public static void OnTargetChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnTargetChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is EyedropperToolButton eyedropperToolButton)
             {

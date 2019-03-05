@@ -41,14 +41,14 @@ namespace Eyedropper.UWP
             set => SetValue(WorkAreaProperty, value);
         }
 
-        public static void OnColorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnColorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is Eyedropper eyedropper)
                 eyedropper.ColorChanged?.Invoke(eyedropper,
                     new ColorChangedEventArgs {OldColor = (Color) e.OldValue, NewColor = (Color) e.NewValue});
         }
 
-        public static void OnWorkAreaChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnWorkAreaChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is Eyedropper eyedropper)
                 eyedropper.UpadateWorkArea();

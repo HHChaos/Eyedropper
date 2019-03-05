@@ -18,6 +18,9 @@ namespace Eyedropper.UWP
 {
     public partial class Eyedropper : Control
     {
+        private const string TouchState = "Touch";
+        private const string MousePenState = "MousePen";
+
         private const int PreviewPixelsPerRawPixel = 10;
         private const int PixelCountPerRow = 11;
         private static readonly CoreCursor DefaultCursor = new CoreCursor(CoreCursorType.Arrow, 1);
@@ -176,11 +179,11 @@ namespace Eyedropper.UWP
             UpdateEyedropper(point.Position);
             if (e.Pointer.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Touch)
             {
-                VisualStateManager.GoToState(this, "TouchState", false);
+                VisualStateManager.GoToState(this, TouchState, false);
             }
             else
             {
-                VisualStateManager.GoToState(this, "MousePenState", false);
+                VisualStateManager.GoToState(this, MousePenState, false);
             }
 
             if (Opacity < 1) Opacity = 1;

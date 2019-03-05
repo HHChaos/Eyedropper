@@ -221,13 +221,13 @@
                         </Grid>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup>
-                                <VisualState x:Name="MousePenState">
+                                <VisualState x:Name="MousePen">
                                     <VisualState.Setters>
                                         <Setter Target="imageGrid.(Grid.Row)" Value="0" />
                                         <Setter Target="colorGrid.(Grid.Row)" Value="2" />
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="TouchState">
+                                <VisualState x:Name="Touch">
                                     <VisualState.Setters>
                                         <Setter Target="imageGrid.(Grid.Row)" Value="2" />
                                         <Setter Target="colorGrid.(Grid.Row)" Value="0" />
