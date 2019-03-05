@@ -66,6 +66,7 @@ namespace Eyedropper.UWP
         {
             Click += EyedropperToolButton_Click;
             Unloaded += EyedropperToolButton_Unloaded;
+            ActualThemeChanged += EyedropperToolButton_ActualThemeChanged;
             Window.Current.SizeChanged += Current_SizeChanged;
             _eyedropper.ColorChanged += Eyedropper_ColorChanged;
             _eyedropper.PickStarted += Eyedropper_PickStarted;
@@ -76,6 +77,7 @@ namespace Eyedropper.UWP
         {
             Click -= EyedropperToolButton_Click;
             Unloaded -= EyedropperToolButton_Unloaded;
+            ActualThemeChanged -= EyedropperToolButton_ActualThemeChanged;
             Window.Current.SizeChanged -= Current_SizeChanged;
             _eyedropper.ColorChanged -= Eyedropper_ColorChanged;
             _eyedropper.PickStarted -= Eyedropper_PickStarted;
@@ -94,6 +96,11 @@ namespace Eyedropper.UWP
         private void EyedropperToolButton_Unloaded(object sender, RoutedEventArgs e)
         {
             UnhookEvents();
+        }
+
+        private void EyedropperToolButton_ActualThemeChanged(FrameworkElement sender, object args)
+        {
+            _eyedropper.RequestedTheme = this.ActualTheme;
         }
 
         private void Eyedropper_PickStarted(Eyedropper sender, EventArgs args)
