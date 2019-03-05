@@ -25,11 +25,12 @@ namespace Eyedropper.UWP
             DefaultStyleKey = typeof(EyedropperToolButton);
             RegisterPropertyChangedCallback(IsEnabledProperty, OnIsEnabledChanged);
             _eyedropper = new Eyedropper();
-            _eyedropper.ColorChanged += Eyedropper_ColorChanged;
-            _eyedropper.PickStarted += Eyedropper_PickStarted;
-            _eyedropper.PickEnded += Eyedropper_PickEnded;
-            Click += EyedropperToolButton_Click;
-            Window.Current.SizeChanged += Current_SizeChanged;
+            this.Loaded += EyedropperToolButton_Loaded;
+        }
+
+        private void EyedropperToolButton_Loaded(object sender, RoutedEventArgs e)
+        {
+            HookUpEvents();
         }
 
         public event TypedEventHandler<EyedropperToolButton, ColorChangedEventArgs> ColorChanged;
@@ -59,6 +60,35 @@ namespace Eyedropper.UWP
             base.OnPointerPressed(e);
 
             VisualStateManager.GoToState(this, EyedropperEnabled ? EyedropperEnabledState : NormalState, true);
+        }
+
+        private void HookUpEvents()
+        {
+            Click += EyedropperToolButton_Click;
+            Unloaded += EyedropperToolButton_Unloaded;
+            Window.Current.SizeChanged += Current_SizeChanged;
+            _eyedropper.ColorChanged += Eyedropper_ColorChanged;
+            _eyedropper.PickStarted += Eyedropper_PickStarted;
+            _eyedropper.PickEnded += Eyedropper_PickEnded;
+        }
+
+        private void UnhookEvents()
+        {
+            Click -= EyedropperToolButton_Click;
+            Unloaded -= EyedropperToolButton_Unloaded;
+            Window.Current.SizeChanged -= Current_SizeChanged;
+            _eyedropper.ColorChanged -= Eyedropper_ColorChanged;
+            _eyedropper.PickStarted -= Eyedropper_PickStarted;
+            _eyedropper.PickEnded -= Eyedropper_PickEnded;
+            if (EyedropperEnabled)
+            {
+                EyedropperEnabled = false;
+            }
+        }
+
+        private void EyedropperToolButton_Unloaded(object sender, RoutedEventArgs e)
+        {
+            UnhookEvents();
         }
 
         private void Eyedropper_PickStarted(Eyedropper sender, EventArgs args)

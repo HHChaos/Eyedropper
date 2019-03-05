@@ -10,14 +10,14 @@
     mc:Ignorable="d">
 
     <Grid BorderBrush="Red">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
-        <uwp:EyedropperToolButton Target="{x:Bind Image}" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <uwp:EyedropperToolButton HorizontalAlignment="Center" Target="{x:Bind Image}" />
         <Image
             x:Name="Image"
-            Grid.Column="1"
+            Grid.Row="1"
             Source="/Assets/test.jpg" />
     </Grid>
 </Page>

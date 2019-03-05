@@ -155,7 +155,7 @@
         </Setter>
     </Style>
     <Style TargetType="local:Eyedropper">
-        <Setter Property="Background" Value="{ThemeResource SystemControlAcrylicElementMediumHighBrush}" />
+        <Setter Property="Background" Value="{ThemeResource SystemControlBaseLowAcrylicElementBrush}" />
         <Setter Property="Padding" Value="0,0,0,15" />
         <Setter Property="MinWidth" Value="110" />
         <Setter Property="Template">
