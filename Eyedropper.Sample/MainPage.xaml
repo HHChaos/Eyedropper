@@ -14,7 +14,12 @@
             <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <uwp:EyedropperToolButton HorizontalAlignment="Center" Target="{x:Bind Image}" />
+        <StackPanel Orientation="Horizontal">
+             <uwp:EyedropperToolButton HorizontalAlignment="Center" Target="{x:Bind Image}" PickEnded="EyedropperToolButton_PickEnded"/>
+            <Button x:Name="GlobleBtn" Content="Globle eyedropper" Click="GlobleBtn_Click"/>
+            <TextBlock x:Name="Tip"/>
+        </StackPanel>
+       
         <Image
             x:Name="Image"
             Grid.Row="1"

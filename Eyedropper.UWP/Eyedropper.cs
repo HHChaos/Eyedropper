@@ -146,12 +146,16 @@ namespace Eyedropper.UWP
             await UpdateAppScreenshotAsync();
         }
 
-        private void TargetGrid_PointerReleased(object sender, PointerRoutedEventArgs e)
+        private async void TargetGrid_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             var pointer = e.Pointer;
             if (pointer.PointerId == _pointerId)
             {
                 var point = e.GetCurrentPoint(_rootGrid);
+                if (_appScreenshot == null)
+                {
+                    await UpdateAppScreenshotAsync();
+                }
                 UpdateEyedropper(point.Position);
                 PickEnded?.Invoke(this, EventArgs.Empty);
                 _pointerId = 0;

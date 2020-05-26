@@ -26,5 +26,17 @@ namespace Eyedropper.Sample
         {
             this.InitializeComponent();
         }
+
+        private async void GlobleBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var eyedropper = new Eyedropper.UWP.Eyedropper();
+            var color = await eyedropper.Open();
+            Tip.Text=$"You get {color}.";
+        }
+
+        private void EyedropperToolButton_PickEnded(UWP.EyedropperToolButton sender, EventArgs args)
+        {
+            Tip.Text = $"You get {sender.Color}.";
+        }
     }
 }
